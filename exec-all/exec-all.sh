@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if which jq &> /dev/null; then
+if ! which jq &> /dev/null; then
     echo "Please install jq" 2>&1
     exit 1
 fi
