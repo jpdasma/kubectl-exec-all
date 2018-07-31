@@ -21,7 +21,7 @@ selector=$($KUBECTL -n "$NAMESPACE" get "$RESOURCE" "$RESOURCE_NAME" -o json |  
 selector=${selector%,}
 
 if [[ -z "$CONTAINER" ]]; then
-    $KUBECTL get pods -n "$NAMESPACE" --selector="$selector"  | sed '1 d' | gawk '{ print $1 }' | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" exec -n "$NAMESPACE" -it '{}' -- "$@"
+    $KUBECTL get pods -n "$NAMESPACE" --selector="$selector"  -o json | jq '.items | .[].metadata.name ' | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" exec -n "$NAMESPACE" -it '{}' -- "$@"
 else
-    $KUBECTL get pods -n "$NAMESPACE" --selector="$selector"  | sed '1 d' | gawk '{ print $1 }' | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" exec -n "$NAMESPACE" -it --container="${CONTAINER}" '{}' -- "$@"
+    $KUBECTL get pods -n "$NAMESPACE" --selector="$selector"  -o json | jq '.items | .[].metadata.name ' | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" exec -n "$NAMESPACE" -it --container="${CONTAINER}" '{}' -- "$@"
 fi
