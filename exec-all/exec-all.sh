@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 if ! which jq &> /dev/null; then
     echo "Please install jq" 2>&1
