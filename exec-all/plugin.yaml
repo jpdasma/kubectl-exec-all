@@ -1,0 +1,13 @@
+name: "exec-all"
+shortDesc: "Execute a command in all of the container in a specified resource"
+longDesc: >
+  Execute a command in all of the containers in a specified resource
+example: ""
+command: "./exec-all.sh"
+flags:
+  - name: "container"
+    shorthand: "c"
+    desc: "Container name. If omitted, the first container will be used"
+  - name: "parallel"
+    shorthand: "p"
+    desc: "Number of simultaneous execution. If omitted, will default to 1"
