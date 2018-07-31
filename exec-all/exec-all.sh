@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if ! which jq &> /dev/null; then
-    echo "Please install jq" 2>&1
+    echo "Please install jq" 1>&2
     exit 1
 fi
 
