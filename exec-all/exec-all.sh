@@ -27,6 +27,5 @@ PARALLEL=${KUBECTL_PLUGINS_LOCAL_FLAG_PARALLEL:-1}
 selector=$($KUBECTL --kubeconfig="${KUBECONFIG}" -n "$NAMESPACE" get "$RESOURCE" "$RESOURCE_NAME" -o json |  jq -j '.spec.selector.matchLabels | to_entries | .[] | "\(.key)=\(.value),"')
 selector=${selector%,}
 
-$KUBECTL --kubeconfig="${KUBECONFIG}" get pods -n "$NAMESPACE" --selector="$selector"  -o json \
-    | jq '.items | .[].metadata.name ' \
-    | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" --kubeconfig="${KUBECONFIG}" exec -n "$NAMESPACE" -it "$CONTAINER_FLAG" '{}' -- "$@"
+# shellcheck disable=SC2086
+$KUBECTL --kubeconfig="${KUBECONFIG}" get pods -n "$NAMESPACE" --selector="$selector"  -o json | jq '.items | .[].metadata.name ' | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" --kubeconfig="${KUBECONFIG}" exec -n $CONTAINER_FLAG "$NAMESPACE" '{}' -- "$@"
