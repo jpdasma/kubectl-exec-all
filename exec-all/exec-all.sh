@@ -28,4 +28,4 @@ selector=$($KUBECTL --kubeconfig="${KUBECONFIG}" -n "$NAMESPACE" get "$RESOURCE"
 selector=${selector%,}
 
 # shellcheck disable=SC2086
-$KUBECTL --kubeconfig="${KUBECONFIG}" get pods -n "$NAMESPACE" --selector="$selector"  -o json | jq '.items | .[].metadata.name ' | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" --kubeconfig="${KUBECONFIG}" exec -n $CONTAINER_FLAG "$NAMESPACE" '{}' -- "$@"
+$KUBECTL --kubeconfig="${KUBECONFIG}" get pods -n "$NAMESPACE" --selector="$selector"  -o json | jq '.items | .[].metadata.name ' | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" --kubeconfig="${KUBECONFIG}" exec -n "$NAMESPACE" $CONTAINER_FLAG '{}' -- "$@"
