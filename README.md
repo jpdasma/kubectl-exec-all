@@ -5,7 +5,9 @@
 Run a command in all of the containers in a specific resource.
 
 ## Install
-Copy the exec-all directory inside the `~/.kube/plugins` directory
+Copy the unix directory inside the `~/.kube/plugins` directory
+
+TODO: Add support for krew plugin manager
 
 ## Usage
 
