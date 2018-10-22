@@ -1,31 +1,77 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 if ! which jq &> /dev/null; then
     echo "Please install jq" 1>&2
     exit 1
 fi
 
-RESOURCE="${1}"
-shift
-RESOURCE_NAME="${1}"
-shift
+print_usage() {
+    cat << EOF
+Usage: kubectl exec_all [-c container_name] [-p number_parallel_executions] [-n namespace] resource resource_name command
 
-KUBECTL=${KUBECTL_PLUGINS_CALLER}
-NAMESPACE=${KUBECTL_PLUGINS_GLOBAL_FLAG_NAMESPACE:-default}
-KUBECONFIG=${KUBECTL_PLUGINS_GLOBAL_FLAG_KUBECONFIG:-${HOME}/.kube/config}
+Options:
+-c          Container name if there are multiple containers in the pod. If not included, it will use the default container.
+-p          Number of parallel executions.
+-n          Namespace. If not included, it will use the one specified in kubeconfig file.
+EOF
+exit 1
+}
 
-if [[ -z ${KUBECTL_PLUGINS_LOCAL_FLAG_CONTAINER} ]]; then
-    CONTAINER_FLAG=
-else
-    CONTAINER_FLAG="--container=${KUBECTL_PLUGINS_LOCAL_FLAG_CONTAINER}"
+container=
+parallel=1
+namespace=
+while true; do
+    case "$1" in
+        "-c")
+            shift
+            container="$1"
+            shift
+            ;;
+        "-p")
+            shift
+            parallel="$1"
+            shift
+            ;;
+        "-n")
+            shift
+            namespace="$1"
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+set -u
+
+resource="$1"
+resource_name="$2"
+
+if [[ -z "${resource}" || -z "${resource_name}" ]]; then
+    print_usage
 fi
 
-PARALLEL=${KUBECTL_PLUGINS_LOCAL_FLAG_PARALLEL:-1}
+shift;shift;
 
+kubectl=$(which kubectl)
 
-selector=$($KUBECTL --kubeconfig="${KUBECONFIG}" -n "$NAMESPACE" get "$RESOURCE" "$RESOURCE_NAME" -o json |  jq -j '.spec.selector.matchLabels | to_entries | .[] | "\(.key)=\(.value),"')
+if [[ -z ${container} ]]; then
+    container_flag=
+else
+    container_flag="--container=${container}"
+fi
+
+if [[ -z ${namespace} ]]; then
+    namespace_flag=
+else
+    namespace_flag="--namespace=${namespace}"
+fi
+
+# shellcheck disable=SC2086
+selector=$(${kubectl} ${namespace_flag} get "$resource" "$resource_name" -o json |  jq -j '.spec.selector.matchLabels | to_entries | .[] | "\(.key)=\(.value),"')
 selector=${selector%,}
 
 # shellcheck disable=SC2086
-$KUBECTL --kubeconfig="${KUBECONFIG}" get pods -n "$NAMESPACE" --selector="$selector"  -o json | jq '.items | .[].metadata.name ' | xargs -I{} -n1 -P"${PARALLEL}" "$KUBECTL" --kubeconfig="${KUBECONFIG}" exec -n "$NAMESPACE" $CONTAINER_FLAG '{}' -- "$@"
+${kubectl} get pods ${namespace_flag} --selector="$selector"  -o json | jq '.items | .[].metadata.name ' | xargs -I{} -n1 -P"${parallel}" "${kubectl}" exec $namespace_flag $container_flag '{}' -- "$@"

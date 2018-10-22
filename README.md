@@ -4,15 +4,14 @@
 
 Run a command in all of the containers in a specific resource.
 
-## Install
-Copy the unix directory inside the `~/.kube/plugins` directory
+## Install using krew
 
-TODO: Add support for krew plugin manager
+`kubectl krew install exec-all`
 
 ## Usage
 
 ```
-kubectl plugin exec-all [-c $CONTAINER] [-p $NUMBER_OF_PARALLEL_EXECUTION] $RESOURCE_TYPE $RESOURCE_NAME -- $COMMAND
+kubectl exec_all [-c container_name] [-p number_parallel_executions] [-n namespace] resource resource_name command
 ```
 
 ## Examples
