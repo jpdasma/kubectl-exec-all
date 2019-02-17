@@ -14,3 +14,6 @@ flags:
   - name: "namespace"
     shorthand: "n"
     desc: "Namespace. If not included, it will use the one specified in kubeconfig file."
+  - name: "selector"
+    shorthand: "s"
+    desc: "Selector. Do not include the resource type and resource name if this is included."
